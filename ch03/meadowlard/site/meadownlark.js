@@ -10,15 +10,23 @@ app.set('port', process.env.PORT || 3000)
 // 静态文件
 app.use(express.static(__dirname + '/public'));
 
+// 加载测试中间件
+app.use(function(req,res,next) {
+    res.locals.showTests = app.get('env') !== 'production'&&
+    req.query.test === '1';
+    next();
+})
 app.get('/', function(req,res) {
     // res.type('text/plain');
     // res.send('Meadownlark Travel')
-    res.render('home')
+    res.render('home',{
+        pageTestScript:'/qa/global-tests.js'
+    })
 })
 
 app.get('/about', function(req,res) {
 
-    res.render('about',{fortune:getRandomFortunes()})
+    res.render('about',{fortune:getRandomFortunes(),pageTestScript:'/qa/tests-about.js'})
 })
 
 // 定制 404页面
