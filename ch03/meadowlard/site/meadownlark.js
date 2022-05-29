@@ -6,6 +6,9 @@ app.engine('handlebars',handlebars.engine)
 app.set('view engine','handlebars')
 app.set('port', process.env.PORT || 3000)
 
+// 静态文件
+app.use(express.static(__dirname + '/public'));
+
 app.get('/', function(req,res) {
     // res.type('text/plain');
     // res.send('Meadownlark Travel')
@@ -13,9 +16,17 @@ app.get('/', function(req,res) {
 })
 
 app.get('/about', function(req,res) {
-    // res.type('text/plain');
-    // res.send('About Meadowlark Travel');
-    res.render('about')
+    const fortunes = [
+        "Conquer your fears or they will conquer you.", 
+        "Rivers need springs.", 
+        "Do not fear what you don't know.", 
+        "You will have a pleasant surprise.", 
+        "Whenever possible, keep it simple.",
+    ]
+    // 随机取出
+    const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+    console.log("fuck you")
+    res.render('about',{fortune:randomFortune})
 })
 
 // 定制 404页面
