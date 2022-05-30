@@ -17,6 +17,7 @@ app.use(function(req,res,next) {
     req.query.test === '1';
     next();
 })
+
 app.get('/', function(req,res) {
     // res.type('text/plain');
     // res.send('Meadownlark Travel')
@@ -48,6 +49,12 @@ app.get('/headers', function(req,res) {
     s += `req.ip = ${req.ip}`
     console.log(req.headers)
     res.send(s);
+})
+
+app.get('/better', function(req,res) {
+    res.render('better', {
+        "today":"fuck you"
+    })
 })
 
 // 定制 404页面
