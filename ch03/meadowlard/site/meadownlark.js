@@ -52,17 +52,17 @@ app.get('/headers', function(req,res) {
 
 // 定制 404页面
 app.use(function(req,res) {
-    res.type('text/plain');
-    res.status(404);
-    res.send('404 - Not Found');
+    res.type('text/html');
+    res.status(404).render('404')
 })
 
-// 定制 500页面
+// 定制 500页面: 程序出现错误的时候调用
+// 错误处理程序
 app.use(function(err,req,res,next) {
     console.error(err.stack);
-    res.type('text/plain');
+    res.type('text/html');
     res.status(500);
-    res.send('500 - Server Error');
+    res.send('500');
 })
 
 app.listen(app.get('port'), function() {
