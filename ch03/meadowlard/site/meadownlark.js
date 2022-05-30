@@ -1,7 +1,8 @@
 const express = require('express')
 const app = express()
 const handlebars = require('express-handlebars').create({defaultLayout:'main'})
-const getRandomFortunes = require('./lib/fortune')
+const fortune = require('./lib/fortune')
+app.disable('x-powered-by')
 // 设置视图引擎
 app.engine('handlebars',handlebars.engine)
 app.set('view engine','handlebars')
@@ -26,7 +27,27 @@ app.get('/', function(req,res) {
 
 app.get('/about', function(req,res) {
 
-    res.render('about',{fortune:getRandomFortunes(),pageTestScript:'/qa/tests-about.js'})
+    res.render('about',{fortune:fortune.getFortune(),pageTestScript:'/qa/tests-about.js'})
+})
+
+app.get('/tours/hood-river',function(req,res) {
+    res.render('tours/hood-river')
+})
+
+app.get('/tours/request-group-rate',function(req,res) {
+    res.render('tours/requests-group-rate')
+})
+
+app.get('/headers', function(req,res) {
+    res.set('Content-Type','text/plain')
+    var s = ''
+    for(var name in req.headers) {
+        s += name + ':' + req.headers[name] + '\n';
+    }
+    s += `ip:${req.ip}\n`
+    s += `req.ip = ${req.ip}`
+    console.log(req.headers)
+    res.send(s);
 })
 
 // 定制 404页面

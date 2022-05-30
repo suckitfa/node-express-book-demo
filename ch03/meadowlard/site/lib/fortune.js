@@ -6,8 +6,10 @@ const fortunes = [
     "Whenever possible, keep it simple.",
 ]
 // 随机取出
-const getRandomFortunes = () => {
+const getFortune = () => {
     return fortunes[Math.floor(Math.random() * fortunes.length)];
 }
 
-module.exports = getRandomFortunes;
+module.exports = {
+    getFortune
+}
