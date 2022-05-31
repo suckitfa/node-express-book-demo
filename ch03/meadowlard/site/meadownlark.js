@@ -54,6 +54,11 @@ app.use('/upload', function(req,res,next) {
     })(req,res,next)
 })
 
+// app.use(function(req,res,next) {
+//     res.locals.flash =  req.session.flash;
+//     delete req.session.flash;
+//     next();
+// })
 // home page
 app.get('/', function(req,res) {
     // 设置两个cookie
