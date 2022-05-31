@@ -1,7 +1,9 @@
 const express = require('express')
 const app = express()
+// 使用模板的模板
 const handlebars = require('express-handlebars').create({defaultLayout:'main'})
 const fortune = require('./lib/fortune')
+const weather = require('./lib/weather')
 app.disable('x-powered-by')
 // 设置视图引擎
 app.engine('handlebars',handlebars.engine)
@@ -57,6 +59,34 @@ app.get('/better', function(req,res) {
     })
 })
 
+app.get('/block', function(req,res) {
+    const data = {
+        currency: { 
+            name: 'United States dollars', 
+            abbrev: 'USD', 
+        },
+        tours: [
+            { 
+                name: 'Hood River', price: '$99.95' 
+            }, 
+            { 
+                name: 'Oregon Coast', 
+                price:'$159.95' 
+            }
+        ],
+        specialsUrl: '/january-specials',
+        currencies: [ 'USD', 'GBP', 'BTC' ], 
+    }
+    res.render('block',{
+        ...data
+    });
+})
+
+app.use(function(req,res,next) {
+    if (!res.locals.partials) res.locals.partials = {};
+    res.locals.partials.weather = weather.getWeatherData()
+    next();
+})
 // 定制 404页面
 app.use(function(req,res) {
     res.type('text/html');
