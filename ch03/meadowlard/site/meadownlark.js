@@ -18,7 +18,7 @@ const jqupload = require('jquery-file-upload-middleware');
 const credentials = require('./credentials.js')
 app.use(require('cookie-parser')(credentials.cookieSecret))
 
-
+app.use(require('morgan')('dev'))
 
 // 禁用响应头字段
 app.disable('x-powered-by')
