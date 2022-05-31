@@ -54,11 +54,12 @@ app.use('/upload', function(req,res,next) {
     })(req,res,next)
 })
 
-// app.use(function(req,res,next) {
-//     res.locals.flash =  req.session.flash;
-//     delete req.session.flash;
-//     next();
-// })
+// 将中间件比作管道
+app.use(function(req,res,next) {
+    console.log("processing request for:  " + req.url + ".....")
+    next();
+})
+
 // home page
 app.get('/', function(req,res) {
     // 设置两个cookie
@@ -72,6 +73,11 @@ app.get('/', function(req,res) {
     res.render('home',{
         pageTestScript:'/qa/global-tests.js'
     })
+})
+
+// 没有调用next函数，请求在这里终止
+app.use(function(req,res) {
+    console.log("terminating request........")
 })
 
 app.get('/about', function(req,res) {
