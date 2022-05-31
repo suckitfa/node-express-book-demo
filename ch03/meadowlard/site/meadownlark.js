@@ -1,3 +1,4 @@
+const http = require('http')
 const express = require('express')
 const app = express()
 // 使用模板的模板
@@ -18,7 +19,7 @@ const jqupload = require('jquery-file-upload-middleware');
 const credentials = require('./credentials.js')
 app.use(require('cookie-parser')(credentials.cookieSecret))
 
-app.use(require('morgan')('dev'))
+// app.use(require('morgan')('dev'))
 
 // 禁用响应头字段
 app.disable('x-powered-by')
@@ -32,7 +33,7 @@ app.set('port', process.env.PORT || 3000)
 app.use(express.static(__dirname + '/public'));
 
 // 使用body-parser
-app.use(require('body-parser')());
+// app.use(require('body-parser')());
 
 // 加载测试中间件
 app.use(function(req,res,next) {
@@ -41,24 +42,26 @@ app.use(function(req,res,next) {
     next();
 })
 
-// jquery文件上传中间件的使用
-app.use('/upload', function(req,res,next) {
-    const now = Date.now()
-    jqupload.fileHandler({
-        uploadDir: function() {
-            return __dirname + '/public/uploads/'+now;
-        },
-        uploadUrl:function() {
-            return '/uploads/'+now;
-        }
-    })(req,res,next)
-})
+
+// // jquery文件上传中间件的使用
+// app.use('/upload', function(req,res,next) {
+//     const now = Date.now()
+//     jqupload.fileHandler({
+//         uploadDir: function() {
+//             return __dirname + '/public/uploads/'+now;
+//         },
+//         uploadUrl:function() {
+//             return '/uploads/'+now;
+//         }
+//     })(req,res,next)
+//     next();
+// })
 
 // 将中间件比作管道
-app.use(function(req,res,next) {
-    console.log("processing request for:  " + req.url + ".....")
-    next();
-})
+// app.use(function(req,res,next) {
+//     console.log("processing request for:  " + req.url + ".....")
+//     next();
+// })
 
 // home page
 app.get('/', function(req,res) {
@@ -68,20 +71,18 @@ app.get('/', function(req,res) {
     console.log(`monster = ${monster}, signedMonster = ${signedMonster}`)
     res.cookie('monster','nom nom')
     res.cookie('signed_monster','nom nom',{signed:true})
-    // res.type('text/plain');
-    // res.send('Meadownlark Travel')
     res.render('home',{
         pageTestScript:'/qa/global-tests.js'
     })
 })
 
-// 没有调用next函数，请求在这里终止
-app.use(function(req,res) {
-    console.log("terminating request........")
+app.get('/test-async-error', function(req,res) {
+    process.nextTick(function() {
+        throw new Error('Async Error')
+    })
 })
 
 app.get('/about', function(req,res) {
-
     res.render('about',{fortune:fortune.getFortune(),pageTestScript:'/qa/tests-about.js'})
 })
 
@@ -143,12 +144,6 @@ app.get('/newsletter', function(req,res) {
 })
 
 app.post('/process', function(req,res) {
-    // console.log("Form (from querystring): " + req.query.form)
-    // console.log("CSRF token(from hidden form field): " + req.body._csrf)
-    // console.log('Name (from visible form field): ' + req.body.name); 
-    // console.log('Email (from visible form field): ' + req.body.email); 
-    // res.redirect(303, '/thank-you');
-
     if (req.xhr || req.accepts('json,html') === 'json') {
         res.send({success:true})
     } else {
@@ -192,9 +187,23 @@ app.use(function(err,req,res,next) {
     console.error(err.stack);
     res.type('text/html');
     res.status(500);
-    res.send('500');
+    res.render('500')
 })
 
-app.listen(app.get('port'), function() {
-    console.log(' Express started on http://localhost:'+app.get('port'))
-})
+// app.listen(app.get('port'), function() {
+//     console.log(' Express started on http://localhost:'+app.get('port'))
+// })
+
+function startServer() { 
+    http.createServer(app).listen(app.get('port'), function(){ 
+            console.log( 'Express started in ' + app.get('env') + ' mode on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.' );
+    }); 
+}
+
+if(require.main === module){ 
+    // 应用程序直接运行；启动应用服务器 
+    startServer(); 
+} else {
+     // 应用程序作为一个模块通过 "require" 引入 : 导出函数 // 创建服务器 
+     module.exports = startServer; 
+}
