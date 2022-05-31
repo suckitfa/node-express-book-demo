@@ -1,6 +1,4 @@
 const express = require('express')
-
-// 加载bootstrap框架
 const app = express()
 // 使用模板的模板
 const handlebars = require('express-handlebars').create({
@@ -15,7 +13,16 @@ const handlebars = require('express-handlebars').create({
 })
 const fortune = require('./lib/fortune')
 const weather = require('./lib/weather')
+const formidable = require('formidable')
+const jqupload = require('jquery-file-upload-middleware');
+const credentials = require('./credentials.js')
+app.use(require('cookie-parser')(credentials.cookieSecret))
+
+
+
+// 禁用响应头字段
 app.disable('x-powered-by')
+
 // 设置视图引擎
 app.engine('handlebars',handlebars.engine)
 app.set('view engine','handlebars')
@@ -23,8 +30,10 @@ app.set('port', process.env.PORT || 3000)
 
 // 静态文件
 app.use(express.static(__dirname + '/public'));
+
 // 使用body-parser
 app.use(require('body-parser')());
+
 // 加载测试中间件
 app.use(function(req,res,next) {
     res.locals.showTests = app.get('env') !== 'production'&&
@@ -32,7 +41,27 @@ app.use(function(req,res,next) {
     next();
 })
 
+// jquery文件上传中间件的使用
+app.use('/upload', function(req,res,next) {
+    const now = Date.now()
+    jqupload.fileHandler({
+        uploadDir: function() {
+            return __dirname + '/public/uploads/'+now;
+        },
+        uploadUrl:function() {
+            return '/uploads/'+now;
+        }
+    })(req,res,next)
+})
+
+// home page
 app.get('/', function(req,res) {
+    // 设置两个cookie
+    const monster = req.cookies.monster || 'test'
+    const signedMonster = req.signedCookies.monster || 'test'
+    console.log(`monster = ${monster}, signedMonster = ${signedMonster}`)
+    res.cookie('monster','nom nom')
+    res.cookie('signed_monster','nom nom',{signed:true})
     // res.type('text/plain');
     // res.send('Meadownlark Travel')
     res.render('home',{
@@ -116,6 +145,25 @@ app.post('/process', function(req,res) {
     }
 })
 
+// 处理表单和图片上传
+app.get('/contest/vacation-photo', function(req,res) {
+    var now = new Date()
+    res.render('contest/vacation-photo',{
+        year:now.getFullYear(),
+        month:now.getMonth()
+    })
+})
+app.post('/contest/vacation-photo/:year/:month', function(req,res) {
+    var form = new formidable.IncomingForm();
+    form.parse(req,function(err,fields,files) {
+        if (err) return res.redirect(303,'/error')
+        console.log('received fileds: ')
+        console.log(fields)
+        console.log('receive files: ')
+        console.log(files)
+        res.redirect(303,'/thank-you')
+    });
+})
 app.use(function(req,res,next) {
     if (!res.locals.partials) res.locals.partials = {};
     res.locals.partials.weather = weather.getWeatherData()
