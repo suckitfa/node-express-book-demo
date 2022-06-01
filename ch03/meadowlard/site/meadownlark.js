@@ -40,29 +40,43 @@ app.use(function(req,res,next) {
     res.locals.showTests = app.get('env') !== 'production'&&
     req.query.test === '1';
     next();
-})
+});
 
-
-// // jquery文件上传中间件的使用
-// app.use('/upload', function(req,res,next) {
-//     const now = Date.now()
-//     jqupload.fileHandler({
-//         uploadDir: function() {
-//             return __dirname + '/public/uploads/'+now;
-//         },
-//         uploadUrl:function() {
-//             return '/uploads/'+now;
-//         }
-//     })(req,res,next)
-//     next();
-// })
-
-// 将中间件比作管道
+// 捕获异步错误
 // app.use(function(req,res,next) {
-//     console.log("processing request for:  " + req.url + ".....")
-//     next();
+//     const domain = require('domain').create()
+//     domain.on('error', function(err) {
+//         console.log('DOMAIN ERROR CAUGHT\n',err.stack);
+//         try {
+//             // 5秒内进行故障保护关机
+//             setTimeout(()=>{
+//                 console.error(`Failsafe shutwon.`)
+//                 process.exit(1);
+//             },5000)
+    
+//             // 从集群中断开
+//             const worker = require('cluster');
+//             if (worker) worker.disconnect();
+//             server.close();
+    
+//             try {
+//                 next(err)
+//             } catch(err) {
+//                 console.error('Express error mechanism failed.\n',err.stack)
+//                 res.statusCode = 500;
+//                 res.setHeader('content-type','text/plain')
+//                 res.end('server error')
+//             }
+//         } catch(err) {
+//             console.error('Unable to send 500 response.\n',err.stack)
+//         }
+    
+//         domain.add(req)
+//         domain.add(res)
+    
+//         domain.run(next)
+//     });
 // })
-
 // home page
 app.get('/', function(req,res) {
     // 设置两个cookie
@@ -190,19 +204,16 @@ app.use(function(err,req,res,next) {
     res.render('500')
 })
 
-// app.listen(app.get('port'), function() {
-//     console.log(' Express started on http://localhost:'+app.get('port'))
-// })
-
+var server = ''
 function startServer() { 
-    http.createServer(app).listen(app.get('port'), function(){ 
+    return http.createServer(app).listen(app.get('port'), function(){ 
             console.log( 'Express started in ' + app.get('env') + ' mode on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.' );
     }); 
 }
 
 if(require.main === module){ 
     // 应用程序直接运行；启动应用服务器 
-    startServer(); 
+    server = startServer(); 
 } else {
      // 应用程序作为一个模块通过 "require" 引入 : 导出函数 // 创建服务器 
      module.exports = startServer; 
