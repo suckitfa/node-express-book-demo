@@ -17,7 +17,7 @@ const weather = require('./lib/weather')
 const formidable = require('formidable')
 const jqupload = require('jquery-file-upload-middleware');
 const credentials = require('./credentials.js')
-app.use(require('cookie-parser')(credentials.cookieSecret))
+// app.use(require('cookie-parser')(credentials.cookieSecret))
 
 // app.use(require('morgan')('dev'))
 
@@ -36,11 +36,11 @@ app.use(express.static(__dirname + '/public'));
 // app.use(require('body-parser')());
 
 // 加载测试中间件
-app.use(function(req,res,next) {
-    res.locals.showTests = app.get('env') !== 'production'&&
-    req.query.test === '1';
-    next();
-});
+// app.use(function(req,res,next) {
+//     res.locals.showTests = app.get('env') !== 'production'&&
+//     req.query.test === '1';
+//     next();
+// });
 
 // 捕获异步错误
 // app.use(function(req,res,next) {
@@ -79,22 +79,22 @@ app.use(function(req,res,next) {
 // })
 // home page
 app.get('/', function(req,res) {
-    // 设置两个cookie
-    const monster = req.cookies.monster || 'test'
-    const signedMonster = req.signedCookies.monster || 'test'
-    console.log(`monster = ${monster}, signedMonster = ${signedMonster}`)
-    res.cookie('monster','nom nom')
-    res.cookie('signed_monster','nom nom',{signed:true})
+    // // 设置两个cookie
+    // const monster = req.cookies.monster || 'test'
+    // const signedMonster = req.signedCookies.monster || 'test'
+    // console.log(`monster = ${monster}, signedMonster = ${signedMonster}`)
+    // res.cookie('monster','nom nom')
+    // res.cookie('signed_monster','nom nom',{signed:true})
     res.render('home',{
         pageTestScript:'/qa/global-tests.js'
     })
 })
 
-app.get('/test-async-error', function(req,res) {
-    process.nextTick(function() {
-        throw new Error('Async Error')
-    })
-})
+// app.get('/test-async-error', function(req,res) {
+//     process.nextTick(function() {
+//         throw new Error('Async Error')
+//     })
+// })
 
 app.get('/about', function(req,res) {
     res.render('about',{fortune:fortune.getFortune(),pageTestScript:'/qa/tests-about.js'})
@@ -184,17 +184,13 @@ app.post('/contest/vacation-photo/:year/:month', function(req,res) {
         res.redirect(303,'/thank-you')
     });
 })
-app.use(function(req,res,next) {
-    if (!res.locals.partials) res.locals.partials = {};
-    res.locals.partials.weather = weather.getWeatherData()
-    next();
-})
-// 定制 404页面
-app.use(function(req,res) {
-    res.type('text/html');
-    res.status(404).render('404')
-})
 
+
+// app.use(function(req,res,next) {
+//     if (!res.locals.partials) res.locals.partials = {};
+//     res.locals.partials.weather = weather.getWeatherData()
+//     next();
+// })
 // 定制 500页面: 程序出现错误的时候调用
 // 错误处理程序
 app.use(function(err,req,res,next) {
@@ -203,6 +199,12 @@ app.use(function(err,req,res,next) {
     res.status(500);
     res.render('500')
 })
+
+app.use(function(req,res) {
+    res.type('text/html');
+    res.status(404).render('404')
+})
+
 
 var server = ''
 function startServer() { 
